@@ -1,1 +1,13 @@
+# Self explanatory for nix
 result
+result-*
+
+# Haha, thats my fucking agenix private key!
+*LOVE*
+
+# Just calling it now
+.env
+.env.local
+.pre-commit-config.yaml
+*.tmp
+*.bak
