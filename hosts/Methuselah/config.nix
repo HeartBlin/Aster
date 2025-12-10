@@ -25,7 +25,7 @@ in {
     "${self}/modules/system/nix.nix"
     # "${self}/modules/system/quietBoot.nix"
     # "${self}/modules/system/secureBoot.nix"
-    "${self}/modules/system/users.nix"
+    "${self}/modules/system/user.nix"
 
     # From 'apps'
     # "${self}/modules/apps/analysis.nix"
@@ -58,7 +58,7 @@ in {
   ];
 
   # Users
-  aster.users = [ "nixos" ];
+  aster.user = "nixos";
   users.users."nixos".initialHashedPassword = lib.mkForce null;
 
   # Me, myself and I

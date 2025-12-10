@@ -1,7 +1,7 @@
-{ config, lib, pkgs, ... }:
+{ config, pkgs, ... }:
 
 let
-  ctx = config.aster;
+  inherit (config.aster) user;
   vicinaeConfig = builtins.toJSON {
     closeOnFocusLoss = true;
     considerPreedit = false;
@@ -22,8 +22,6 @@ let
     };
   };
 in {
-  users.users = lib.genAttrs ctx.users (_: { packages = [ pkgs.vicinae ]; });
-
-  hjem.users = lib.genAttrs ctx.users
-    (_: { files."~/.config/vicinae/vicinae.json".text = vicinaeConfig; });
+  users.users.${user}.packages = [ pkgs.vicinae ];
+  hjem.users.${user}.files.".config/vicinae/vicinae.json".text = vicinaeConfig;
 }

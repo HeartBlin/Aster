@@ -1,7 +1,7 @@
-{ config, inputs, lib, pkgs, ... }:
+{ config, inputs, pkgs, ... }:
 
 let
-  ctx = config.aster;
+  inherit (config.aster) user;
   hypr = inputs.hyprland.packages.${pkgs.stdenv.hostPlatform.system};
   uwsm = "uwsm app --";
   battery = ''
@@ -198,12 +198,11 @@ in {
     };
   };
 
-  users.users = lib.genAttrs ctx.users (_: {
-    packages = with pkgs; [
-      swayosd
-      hyprshot
-      inputs.awww.packages.${pkgs.stdenv.hostPlatform.system}.awww
-      wallpaperRandomizer
-    ];
-  });
+  users.users.${user}.packages = with pkgs; [
+    swayosd
+    hyprshot
+    inputs.awww.packages.${pkgs.stdenv.hostPlatform.system}.awww
+    wallpaperRandomizer
+  ];
+
 }

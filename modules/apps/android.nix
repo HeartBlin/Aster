@@ -1,9 +1,8 @@
-{ config, lib, pkgs, ... }:
+{ config, pkgs, ... }:
 
-let ctx = config.aster;
+let inherit (config.aster) user;
 in {
-  users.users = lib.genAttrs ctx.users (_: { extraGroups = [ "adbusers" ]; });
-
+  users.users.${user}.extraGroups = [ "adbusers" ];
   programs.adb.enable = true;
   virtualisation.waydroid = {
     enable = true;

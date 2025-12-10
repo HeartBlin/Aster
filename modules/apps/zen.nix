@@ -1,7 +1,7 @@
 { config, inputs, lib, pkgs, ... }:
 
 let
-  ctx = config.aster;
+  inherit (config.aster) user;
   mkExtensions = builtins.mapAttrs (_: pluginId: {
     install_url =
       "https://addons.mozilla.org/firefox/downloads/latest/${pluginId}/latest.xpi";
@@ -77,6 +77,4 @@ let
     libName = "zen";
     extraPrefs = mkUserJs myPrefs;
   };
-in {
-  users.users = lib.genAttrs ctx.users (_: { packages = [ zen-wrapped ]; });
-}
+in { users.users.${user}.packages = [ zen-wrapped ]; }

@@ -1,7 +1,8 @@
-{ config, lib, pkgs, ... }:
+{ config, pkgs, ... }:
 
-let ctx = config.aster;
+let inherit (config.aster) user;
 in {
+  users.users.${user}.packages = [ pkgs.google-chrome ];
   environment.etc."opt/chrome/policies/managed/extensions.json".text =
     builtins.toJSON {
       ExtensionInstallForcelist = [
@@ -10,7 +11,4 @@ in {
         "eimadpbcbfnmbkopoojfekhnkhdbieeh;https://clients2.google.com/service/update2/crx"
       ];
     };
-
-  users.users =
-    lib.genAttrs ctx.users (_: { packages = [ pkgs.google-chrome ]; });
 }

@@ -1,14 +1,12 @@
-{ config, lib, pkgs, ... }:
+{ config, pkgs, ... }:
 
-let ctx = config.aster;
+let inherit (config.aster) user;
 in {
-  users.users = lib.genAttrs ctx.users (_: {
-    packages = [
-      (pkgs.discord.override {
-        withOpenASAR = true;
-        withVencord = true;
-        withTTS = true;
-      })
-    ];
-  });
+  users.users.${user}.packages = [
+    (pkgs.discord.override {
+      withOpenASAR = true;
+      withVencord = true;
+      withTTS = true;
+    })
+  ];
 }

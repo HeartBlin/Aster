@@ -1,12 +1,12 @@
 { config, inputs, lib, pkgs, ... }:
 
-let ctx = config.aster;
+let inherit (config.aster) user;
 in {
   options.aster = {
-    users = lib.mkOption {
-      description = "List of users to enable on a host";
-      type = lib.types.listOf lib.types.str;
-      default = [ ];
+    user = lib.mkOption {
+      description = "Primary user to create";
+      type = lib.types.str;
+      default = "";
     };
 
     wallpaper = lib.mkOption {
@@ -16,22 +16,22 @@ in {
     };
   };
 
-  config = lib.mkIf (ctx.users != [ ]) {
-    users.users = lib.genAttrs ctx.users (userName: {
+  config = {
+    users.users.${user} = {
       isNormalUser = true;
       initialPassword = "password"; # Change this after nixos-install
-      home = "/home/${userName}";
+      home = "/home/${user}";
       extraGroups = [ "wheel" "networkmanager" ];
-    });
+    };
 
     hjem = {
       clobberByDefault = true;
       linker = inputs.hjem.packages.${pkgs.stdenv.hostPlatform.system}.smfh;
-      users = lib.genAttrs ctx.users (userName: {
+      users.${user} = {
+        inherit user;
         enable = true;
-        directory = "/home/${userName}";
-        user = userName;
-      });
+        directory = "/home/${user}";
+      };
     };
   };
 }

@@ -1,11 +1,11 @@
-{ config, lib, pkgs, ... }:
+{ config, pkgs, ... }:
 
-let ctx = config.aster;
+let inherit (config.aster) user;
 in {
-  users.users = lib.genAttrs ctx.users (_: {
+  users.users.${user} = {
     packages = with pkgs; [ nmap tcpdump wireshark ];
     extraGroups = [ "wireshark" ];
-  });
+  };
 
   programs.wireshark = {
     enable = true;

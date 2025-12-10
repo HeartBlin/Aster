@@ -24,7 +24,7 @@ in {
     "${self}/modules/system/nix.nix"
     "${self}/modules/system/quietBoot.nix"
     "${self}/modules/system/secureBoot.nix"
-    "${self}/modules/system/users.nix"
+    "${self}/modules/system/user.nix"
 
     # From 'apps'
     "${self}/modules/apps/analysis.nix"
@@ -57,7 +57,7 @@ in {
   ];
 
   # Global Aster config
-  aster.users = [ "heartblin" ]; # List of users to create
+  aster.user = "heartblin";
 
   # Module overrides
   boot = {
@@ -90,7 +90,7 @@ in {
   };
 
   # Feed secrets
-  users.users.heartblin = {
+  users.users."${config.aster.user}" = {
     initialPassword = mkForce null;
     hashedPasswordFile = config.age.secrets.heart.path;
   };

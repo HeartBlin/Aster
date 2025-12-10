@@ -1,6 +1,6 @@
-{ config, pkgs, lib, ... }:
+{ config, pkgs, ... }:
 
-let ctx = config.aster;
+let inherit (config.aster) user;
 in {
   services = {
     gnome.gnome-keyring.enable = true;
@@ -24,16 +24,14 @@ in {
     };
   };
 
-  users.users = lib.genAttrs ctx.users (_: {
-    packages = with pkgs; [
-      nautilus
-      loupe
-      file-roller
-      seahorse
-      gnome-disk-utility
-      adwaita-icon-theme
-    ];
-  });
+  users.users.${user}.packages = with pkgs; [
+    nautilus
+    loupe
+    file-roller
+    seahorse
+    gnome-disk-utility
+    adwaita-icon-theme
+  ];
 
   programs.dconf.enable = true;
 }

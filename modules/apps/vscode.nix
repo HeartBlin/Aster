@@ -1,7 +1,7 @@
-{ config, pkgs, lib, ... }:
+{ config, pkgs, ... }:
 
 let
-  ctx = config.aster;
+  inherit (config.aster) user;
 
   languageServers = with pkgs.vscode-extensions; [
     jnoortheen.nix-ide
@@ -143,17 +143,14 @@ let
 
   settings = builtins.toJSON allSettings;
 in {
-  users.users = lib.genAttrs ctx.users (_: {
-    packages = [
-      vscodeExtended
-      pkgs.nil
-      pkgs.nixfmt-classic
-      pkgs.statix
-      pkgs.deadnix
-      pkgs.bat
-    ];
-  });
+  users.users.${user}.packages = [
+    vscodeExtended
+    pkgs.nil
+    pkgs.nixfmt-classic
+    pkgs.statix
+    pkgs.deadnix
+    pkgs.bat
+  ];
 
-  hjem.users = lib.genAttrs ctx.users
-    (_: { files.".config/Code/User/settings.json".text = settings; });
+  hjem.users.${user}.files.".config/Code/User/settings.json".text = settings;
 }

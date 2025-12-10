@@ -1,7 +1,7 @@
-{ config, lib, ... }:
+{ config, ... }:
 
 let
-  ctx = config.aster;
+  inherit (config.aster) user;
   gitConfig = ''
     [commit]
       gpgsign = true
@@ -25,10 +25,8 @@ let
   '';
 in {
   programs.git.enable = true;
-  hjem.users = lib.genAttrs ctx.users (_: {
-    files = {
-      ".config/git/config".text = gitConfig;
-      ".ssh/config".text = sshConfig;
-    };
-  });
+  hjem.users.${user}.files = {
+    ".config/git/config".text = gitConfig;
+    ".ssh/config".text = sshConfig;
+  };
 }

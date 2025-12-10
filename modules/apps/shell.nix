@@ -1,6 +1,6 @@
-{ config, lib, pkgs, ... }:
+{ config, pkgs, ... }:
 
-let ctx = config.aster;
+let inherit (config.aster) user;
 in {
   programs = {
     command-not-found.enable = false;
@@ -46,5 +46,5 @@ in {
     cleanNix = "nh clean all";
   };
 
-  users.users = lib.genAttrs ctx.users (_: { shell = pkgs.fish; });
+  users.users.${user}.shell = pkgs.fish;
 }
