@@ -14,38 +14,30 @@ let
     CURRENT_CLEAN=$(basename "$CURRENT_FULL" | sed -E 's/^[a-z0-9]{32}-//')
     TARGET=$(find -L "$DIR" -type f | grep -vE "/([a-z0-9]{32}-)?$CURRENT_CLEAN$" | shuf -n 1)
     [ -z "$TARGET" ] && TARGET=$(find -L "$DIR" -type f | shuf -n 1)
-
     awww img "$TARGET" --transition-type any --transition-fps 144 --transition-duration 1
   '';
 
   hyprGameMode = pkgs.writeShellScriptBin "hyprGameMode" ''
-    gamemode_on() {
+    off() {
+      hyprctl notify 1 5000 "rgb(d20f39)" "Gamemode [OFF]";awww pause;hyprctl reload;
+    }
+
+    on() {
       hyprctl --batch "\
-        keyword animations:enabled 0;\
-        keyword animation borderangle,0; \
-        keyword decoration:shadow:enabled 0;\
-        keyword decoration:blur:enabled 0;\
-        keyword decoration:fullscreen_opacity 1;\
-        keyword general:gaps_in 0;\
-        keyword general:gaps_out 0;\
-        keyword general:border_size 1;\
-        keyword decoration:rounding 0"
-      awww pause
-      hyprctl notify 1 5000 "rgb(40a02b)" "Gamemode [ON]"
+      keyword animations:enabled 0;\
+      keyword animation borderangle 0;\
+      keyword decoration:shadow:enabled 0;\
+      keyword decoration:blur:enabled 0;\
+      keyword decoration:fullscreen_opacity 1;\
+      keyword general:gaps_in 0;\
+      keyword general:gaps_out 0;\
+      keyword general:border_size 1;\
+      keyword decoration:rounding 0";
+      awww pause;
+      hyprctl notify 1 5000 "rgb(40a02b)" "Gamemode [ON]";
     }
 
-    gamemode_off() {
-      hyprctl notify 1 5000 "rgb(d20f39)" "Gamemode [OFF]"
-      awww pause
-      hyprctl reload
-    }
-
-    HYPRGAMEMODE=$(hyprctl getoption animations:enabled | awk 'NR==1{print $2}')
-    if [ "$HYPRGAMEMODE" = 1 ] ; then
-      gamemode_on
-    else
-      gamemode_off
-    fi
+    [ "$(hyprctl getoption animations:enabled|awk 'NR==1{print $2}')" = 1 ] && off||on
   '';
 in {
 
