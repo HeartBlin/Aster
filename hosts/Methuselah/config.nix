@@ -59,7 +59,6 @@ in {
 
   # Users
   aster.user = "nixos";
-  users.users."nixos".initialHashedPassword = lib.mkForce null;
 
   # Me, myself and I
   environment.etc."nixos/flake".source = self;

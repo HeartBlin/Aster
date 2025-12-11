@@ -90,10 +90,8 @@ in {
   };
 
   # Feed secrets
-  users.users."${config.aster.user}" = {
-    initialPassword = mkForce null;
-    hashedPasswordFile = config.age.secrets.heart.path;
-  };
+  users.users."${config.aster.user}".hashedPasswordFile =
+    config.age.secrets.heart.path;
 
   # Identity
   environment.systemPackages =

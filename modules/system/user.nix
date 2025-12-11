@@ -19,7 +19,6 @@ in {
   config = {
     users.users.${user} = {
       isNormalUser = true;
-      initialPassword = "password"; # Change this after nixos-install
       home = "/home/${user}";
       extraGroups = [ "wheel" "networkmanager" ];
     };
