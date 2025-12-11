@@ -64,11 +64,12 @@ jobs:
             cat methuselah.iso.* > methuselah.iso
             \`\`\`
 
-            **Windows (PowerShell):**
-            Fuck knows if this works dude.
+            **Windows (PowerShell/CMD):**
+            # Fuck knows if this works dude.
+            I actually do now. Not really, this one does though!
 
-            \`\`\`powershell
-            Get-Content methuselah.iso.* -ReadCount 0 -Encoding Byte | Add-Content methuselah.iso -Encoding Byte
+            \`\`\`cmd
+            copy /b methuselah.iso.* methuselah.iso
             \`\`\`
             EOF
 
