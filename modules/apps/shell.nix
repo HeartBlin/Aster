@@ -40,11 +40,5 @@ in {
     };
   };
 
-  environment.shellAliases = {
-    makeNix = "nh os switch";
-    makeNixBoot = "nh os boot";
-    cleanNix = "nh clean all";
-  };
-
   users.users.${user}.shell = pkgs.fish;
 }
