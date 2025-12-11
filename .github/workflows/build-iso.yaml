@@ -34,6 +34,12 @@ jobs:
             experimental-features = nix-command flakes
             access-tokens = github.com=${{ secrets.GITHUB_TOKEN }}
 
+      - name: Setup Cachix
+        uses: cachix/cachix-action@v15
+        with:
+          name: aster
+          authToken: ${{ secrets.CACHIX_AUTH_TOKEN }}
+
       - name: Build ISO
         id: build
         run: |
