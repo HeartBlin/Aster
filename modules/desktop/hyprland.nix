@@ -10,8 +10,40 @@ let
 
   wallpaperRandomizer = pkgs.writeShellScriptBin "wallpaperRandomizer" ''
     DIR="$HOME/Pictures/Wallpapers"
-    TARGET=$(find "$DIR" -type f | shuf -n 1)
+    CURRENT=$(awww query | awk -F 'image: ' '{print $2}')
+    TARGET=$(find "$DIR" -type f | grep -F -v "$CURRENT" | shuf -n 1)
+    [ -z "$TARGET" ] && TARGET=$(find "$DIR" -type f | shuf -n 1)
     awww img "$TARGET" --transition-type any --transition-fps 144 --transition-duration 1
+  '';
+
+  hyprGameMode = pkgs.writeShellScriptBin "hyprGameMode" ''
+    gamemode_on() {
+      hyprctl --batch "\
+        keyword animations:enabled 0;\
+        keyword animation borderangle,0; \
+        keyword decoration:shadow:enabled 0;\
+        keyword decoration:blur:enabled 0;\
+        keyword decoration:fullscreen_opacity 1;\
+        keyword general:gaps_in 0;\
+        keyword general:gaps_out 0;\
+        keyword general:border_size 1;\
+        keyword decoration:rounding 0"
+      awww pause
+      hyprctl notify 1 5000 "rgb(40a02b)" "Gamemode [ON]"
+    }
+
+    gamemode_off() {
+      hyprctl notify 1 5000 "rgb(d20f39)" "Gamemode [OFF]"
+      awww pause
+      hyprctl reload
+    }
+
+    HYPRGAMEMODE=$(hyprctl getoption animations:enabled | awk 'NR==1{print $2}')
+    if [ "$HYPRGAMEMODE" = 1 ] ; then
+      gamemode_on
+    else
+      gamemode_off
+    fi
   '';
 in {
 
@@ -37,9 +69,9 @@ in {
 
         monitor = [
           "eDP-1, 1920x1080@144, 0x0, 1"
-          # For any undeclared monitors
-          ", preferred, auto, 1"
+          ", preferred, auto, 1" # For any undeclared monitors
         ];
+
         xwayland.force_zero_scaling = true;
         exec-once = [
           # Finish setup
@@ -112,6 +144,7 @@ in {
           "Super, C, exec, ${clock}"
           ", Print, exec, hyprshot -m region"
           "Super, Tab, exec, wallpaperRandomizer"
+          "Super, G, exec, hyprGameMode" # Oh boy it's gaming™ time™
 
           # Close windows/Hyprland/poweroff
           "Super, Q, killactive"
@@ -186,6 +219,8 @@ in {
           "match:namespace vicinae ignorealpha 0"
         ];
       };
+
+      extraConfig = "\n";
     };
 
     uwsm = {
@@ -203,6 +238,7 @@ in {
     hyprshot
     inputs.awww.packages.${pkgs.stdenv.hostPlatform.system}.awww
     wallpaperRandomizer
+    hyprGameMode
   ];
 
 }
