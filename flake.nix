@@ -48,5 +48,9 @@
       formatter = genAttrs systems (system:
         let pkgs = nixpkgs.legacyPackages.${system};
         in pkgs.nixfmt-classic);
+
+      packages = genAttrs systems (system:
+        let pkgs = nixpkgs.legacyPackages.${system};
+        in import ./packages/default.nix { inherit pkgs; });
     };
 }

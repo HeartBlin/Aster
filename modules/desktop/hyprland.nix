@@ -1,4 +1,4 @@
-{ config, inputs, pkgs, ... }:
+{ config, inputs, pkgs, self, ... }:
 
 let
   inherit (config.aster) user;
@@ -9,10 +9,12 @@ let
   clock = ''hyprctl notify 2 4000 "0xff444444" "fontsize:15 $(date +'%H:%M')"'';
 
   wallpaperRandomizer = pkgs.writeShellScriptBin "wallpaperRandomizer" ''
-    DIR="$HOME/Pictures/Wallpapers"
-    CURRENT=$(awww query | awk -F 'image: ' '{print $2}')
-    TARGET=$(find "$DIR" -type f | grep -F -v "$CURRENT" | shuf -n 1)
-    [ -z "$TARGET" ] && TARGET=$(find "$DIR" -type f | shuf -n 1)
+    DIR="${self.packages.${pkgs.stdenv.hostPlatform.system}.wallpapers}"
+    CURRENT_FULL=$(awww query | grep -oP "image: \K.*")
+    CURRENT_CLEAN=$(basename "$CURRENT_FULL" | sed -E 's/^[a-z0-9]{32}-//')
+    TARGET=$(find -L "$DIR" -type f | grep -vE "/([a-z0-9]{32}-)?$CURRENT_CLEAN$" | shuf -n 1)
+    [ -z "$TARGET" ] && TARGET=$(find -L "$DIR" -type f | shuf -n 1)
+
     awww img "$TARGET" --transition-type any --transition-fps 144 --transition-duration 1
   '';
 
@@ -240,5 +242,4 @@ in {
     wallpaperRandomizer
     hyprGameMode
   ];
-
 }
