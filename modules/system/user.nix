@@ -1,8 +1,8 @@
 { config, inputs, lib, pkgs, ... }:
 
-let inherit (config.aster) user;
+let inherit (config.Aster) user;
 in {
-  options.aster = {
+  options.Aster = {
     user = lib.mkOption {
       description = "Primary user to create";
       type = lib.types.str;
@@ -10,12 +10,13 @@ in {
     };
 
     wallpaper = lib.mkOption {
-      description = "What wallpaper to use for Hyprland";
+      description = "What wallpaper to use";
       type = lib.types.str;
       default = "";
     };
   };
 
+  imports = [ inputs.hjem.nixosModules.default ];
   config = {
     users.users.${user} = {
       isNormalUser = true;

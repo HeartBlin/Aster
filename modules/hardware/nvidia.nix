@@ -1,8 +1,10 @@
-{ config, pkgs, lib, ... }:
+{ config, lib, pkgs, ... }:
 
 let
-  inherit (config.boot.kernelPackages.nvidiaPackages) stable beta;
-  custom = config.boot.kernelPackages.nvidiaPackages.mkDriver {
+  cfg = config.Aster.hardware.nvidia;
+  nvPkgs = config.boot.kernelPackages.nvidiaPackages;
+
+  customDriver = nvPkgs.mkDriver {
     version = "590.44.01";
     sha256_64bit = "sha256-VbkVaKwElaazojfxkHnz/nN/5olk13ezkw/EQjhKPms=";
     openSha256 = "sha256-ft8FEnBotC9Bl+o4vQA1rWFuRe7gviD/j1B8t0MRL/o=";
@@ -10,48 +12,62 @@ let
     settingsSha256 = lib.fakeSha256; # Not used, but required lmao
   };
 
-  allDrivers = [ stable beta custom ];
-  sortDrivers =
-    lib.sort (a: b: lib.versionOlder a.version b.version) allDrivers;
-  latest = lib.last sortDrivers;
+  # Pick the latest and greatest driver, packaged or not
+  latestDriver = lib.last
+    (lib.sort (a: b: lib.versionOlder a.version b.version) [
+      nvPkgs.stable
+      nvPkgs.beta
+      customDriver
+    ]);
+
 in {
-  services.xserver.enable = true;
-  services.xserver.videoDrivers = [ "nvidia" ];
-  nixpkgs.config = {
-    nvidia.acceptLicense = true;
-    cudaSupport = true;
-  };
+  options.Aster.hardware.nvidia.enable =
+    lib.mkEnableOption "NVIDIA (Hybrid Graphics)";
 
-  environment.systemPackages = with pkgs; [
-    btop
-    vulkan-tools
-    vulkan-loader
-    vulkan-extension-layer
-    libva
-    libva-utils
-  ];
+  config = lib.mkIf cfg.enable {
+    nixpkgs.config = {
+      nvidia.acceptLicense = true;
+      cudaSupport = true;
+    };
 
-  hardware.nvidia = {
-    package = latest;
-    dynamicBoost.enable = true;
-    modesetting.enable = true;
-    nvidiaSettings = false;
-    open = true;
-    nvidiaPersistenced = true;
-    powerManagement.enable = true;
-    prime = {
-      amdgpuBusId = "PCI:6:0:0";
-      nvidiaBusId = "PCI:1:0:0";
-      offload = {
-        enable = true;
-        enableOffloadCmd = true;
+    services.xserver = {
+      enable = true;
+      videoDrivers = [ "nvidia" ];
+    };
+
+    hardware.nvidia = {
+      package = latestDriver;
+      modesetting.enable = true;
+      open = true;
+      nvidiaSettings = false;
+      nvidiaPersistenced = true;
+      powerManagement.enable = true;
+      dynamicBoost.enable = true;
+
+      # NOTE: mkForce if a host needs other ids
+      prime = {
+        amdgpuBusId = "PCI:6:0:0";
+        nvidiaBusId = "PCI:1:0:0";
+        offload = {
+          enable = true;
+          enableOffloadCmd = true;
+        };
       };
     };
-  };
 
-  hardware.graphics = {
-    enable = true;
-    extraPackages = with pkgs; [ nvidia-vaapi-driver ];
-    extraPackages32 = with pkgs.pkgsi686Linux; [ nvidia-vaapi-driver ];
+    hardware.graphics = {
+      enable = true;
+      extraPackages = with pkgs; [ nvidia-vaapi-driver ];
+      extraPackages32 = with pkgs.pkgsi686Linux; [ nvidia-vaapi-driver ];
+    };
+
+    environment.systemPackages = with pkgs; [
+      btop
+      vulkan-tools
+      vulkan-loader
+      vulkan-extension-layer
+      libva
+      libva-utils
+    ];
   };
 }

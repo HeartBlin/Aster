@@ -1,15 +1,18 @@
-{ config, pkgs, ... }:
+{ config, lib, pkgs, ... }:
 
-let inherit (config.aster) user;
-in {
-  users.users.${user} = {
-    packages = with pkgs; [ nmap tcpdump wireshark ];
-    extraGroups = [ "wireshark" ];
-  };
+{
+  options.Aster.apps.analysis.enable =
+    lib.mkEnableOption "Network analysis tools";
 
-  programs.wireshark = {
-    enable = true;
-    dumpcap.enable = true;
-    usbmon.enable = true;
+  config = lib.mkIf config.Aster.apps.analysis.enable {
+    users.users.${config.Aster.user} = {
+      packages = with pkgs; [ nmap tcpdump wireshark ];
+      extraGroups = [ "wireshark" ];
+    };
+
+    programs.wireshark = {
+      enable = true;
+      package = pkgs.wireshark;
+    };
   };
 }

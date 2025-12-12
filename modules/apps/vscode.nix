@@ -1,67 +1,16 @@
-{ config, pkgs, ... }:
+{ config, lib, pkgs, ... }:
 
 let
-  inherit (config.aster) user;
-
-  languageServers = with pkgs.vscode-extensions; [
-    jnoortheen.nix-ide
-    esbenp.prettier-vscode
-    rust-lang.rust-analyzer
-  ];
-
-  githubExtensions = with pkgs.vscode-extensions.github; [
-    copilot
-    copilot-chat
-    codespaces
-    vscode-github-actions
-    vscode-pull-request-github
-  ];
-
-  cDevExtensions = with pkgs.vscode-extensions; [
-    ms-vscode.cpptools-extension-pack
-    ms-vscode.makefile-tools
-    llvm-vs-code-extensions.vscode-clangd
-  ];
-
-  miscExtensions = with pkgs.vscode-extensions; [
-    pkief.material-icon-theme
-    usernamehw.errorlens
-    mkhl.direnv
-    gruntfuggly.todo-tree
-  ];
-
-  manualExtensions = pkgs.vscode-utils.extensionsFromVscodeMarketplace [{
+  cfg = config.Aster.apps.vscode;
+  marketplaceExtensions = pkgs.vscode-utils.extensionsFromVscodeMarketplace [{
     name = "sftp";
     publisher = "natizyskunk";
     version = "1.16.3";
     sha256 = "sha256-HifPiHIbgsfTldIeN9HaVKGk/ujaZbjHMiLAza/o6J4=";
   }];
 
-  vscodeExtended = pkgs.vscode-with-extensions.override {
-    inherit (pkgs) vscode;
-    vscodeExtensions = builtins.concatLists [
-      languageServers
-      githubExtensions
-      cDevExtensions
-      miscExtensions
-      manualExtensions
-    ];
-  };
-
-  cDevSettings = {
-    "C_Cpp.intelliSenseEngine" = "disabled";
-    "C_Cpp.default.compilerPath" = "${pkgs.gcc}/bin/gcc";
-    "[c]" = {
-      "editor.defaultFormatter" = "llvm-vs-code-extensions.vscode-clangd";
-      "editor.formatOnSave" = true;
-    };
-    "[cpp]" = {
-      "editor.defaultFormatter" = "llvm-vs-code-extensions.vscode-clangd";
-      "editor.formatOnSave" = true;
-    };
-  };
-
-  editorSettings = {
+  userSettings = {
+    # Editor
     "editor.bracketPairColorization.enabled" = true;
     "editor.cursorBlinking" = "smooth";
     "editor.cursorSmoothCaretAnimation" = "on";
@@ -76,81 +25,115 @@ let
     "editor.stickyScroll.enabled" = true;
     "editor.trimAutoWhitespace" = true;
     "editor.wordWrap" = "on";
-  };
 
-  explorerSettings = {
+    # Explorer
     "explorer.compactFolders" = false;
     "explorer.confirmDelete" = false;
     "explorer.confirmDragAndDrop" = false;
-  };
 
-  extensionSettings = {
+    # Extensions Specific
     "errorLens.gutterIconsEnabled" = true;
     "errorLens.messageBackgroundMode" = "message";
     "direnv.restart.automatic" = true;
-  };
 
-  filesSettings = {
+    # Files
     "files.autoSave" = "onWindowChange";
     "files.insertFinalNewline" = true;
     "files.trimTrailingWhitespace" = true;
-  };
 
-  langSettings = {
+    # Lang Servers
+    ## Nix
     "nix.enableLanguageServer" = true;
     "nix.serverPath" = "nil";
     "nix.serverSettings"."nil"."formatting"."command" = [ "nixfmt" ];
-
     "[nix]" = {
       "editor.defaultFormatter" = "jnoortheen.nix-ide";
       "editor.formatOnSave" = true;
     };
 
+    ## Rust
     "rust-analyzer.server.path" = "rust-analyzer";
-  };
 
-  telemetrySettings = {
+    ## C/C++
+    "C_Cpp.intelliSenseEngine" = "disabled";
+    "C_Cpp.default.compilerPath" = "${pkgs.gcc}/bin/gcc";
+    "[c]" = {
+      "editor.defaultFormatter" = "llvm-vs-code-extensions.vscode-clangd";
+      "editor.formatOnSave" = true;
+    };
+    "[cpp]" = {
+      "editor.defaultFormatter" = "llvm-vs-code-extensions.vscode-clangd";
+      "editor.formatOnSave" = true;
+    };
+
+    # Telemetry
     "redhat.telemetry.enabled" = false;
     "telemetry.telemetryLevel" = "off";
     "extensions.autoCheckUpdates" = false;
     "extensions.autoUpdate" = false;
     "update.mode" = "none";
     "update.showReleaseNotes" = false;
-  };
 
-  windowSettings = {
+    # Window
     "window.dialogStyle" = "custom";
     "window.menuBarVisibility" = "toggle";
     "window.titleBarStyle" = "custom";
-  };
 
-  workbenchSettings = {
+    # Workbench
     "workbench.colorTheme" = "Default Dark+";
     "workbench.editor.empty.hint" = "hidden";
     "workbench.iconTheme" = "material-icon-theme";
     "workbench.layoutControl.enabled" = false;
     "workbench.startupEditor" = "none";
-  };
 
-  terminalSettings = {
+    # Terminal
     "terminal.integrated.fontFamily" = "'monospace'";
     "terminal.integrated.gpuAcceleration" = "on";
   };
 
-  allSettings = cDevSettings // editorSettings // explorerSettings
-    // extensionSettings // filesSettings // langSettings // telemetrySettings
-    // windowSettings // workbenchSettings // terminalSettings;
-
-  settings = builtins.toJSON allSettings;
 in {
-  users.users.${user}.packages = [
-    vscodeExtended
-    pkgs.nil
-    pkgs.nixfmt-classic
-    pkgs.statix
-    pkgs.deadnix
-    pkgs.bat
-  ];
+  options.Aster.apps.vscode.enable = lib.mkEnableOption "VS Code";
 
-  hjem.users.${user}.files.".config/Code/User/settings.json".text = settings;
+  config = lib.mkIf cfg.enable {
+    users.users.${config.Aster.user}.packages = with pkgs; [
+      (vscode-with-extensions.override {
+        inherit vscode;
+        vscodeExtensions = with vscode-extensions;
+          [
+            # Language Servers
+            jnoortheen.nix-ide
+            esbenp.prettier-vscode
+            rust-lang.rust-analyzer
+
+            # GitHub
+            github.copilot
+            github.copilot-chat
+            github.codespaces
+            github.vscode-github-actions
+            github.vscode-pull-request-github
+
+            # C/C++
+            ms-vscode.cpptools-extension-pack
+            ms-vscode.makefile-tools
+            llvm-vs-code-extensions.vscode-clangd
+
+            # Misc
+            pkief.material-icon-theme
+            usernamehw.errorlens
+            mkhl.direnv
+            gruntfuggly.todo-tree
+          ] ++ marketplaceExtensions;
+      })
+
+      # CLI tools
+      nil
+      nixfmt-classic
+      statix
+      deadnix
+      bat
+    ];
+
+    hjem.users.${config.Aster.user}.files.".config/Code/User/settings.json".text =
+      builtins.toJSON userSettings;
+  };
 }

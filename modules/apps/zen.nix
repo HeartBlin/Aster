@@ -1,14 +1,27 @@
+# Oh god this wall hell to figure out
+# Basically does what 0xc000022070 home-manager module does
+# but with hjem
+# I'll actually comment what this does
+
 { config, inputs, lib, pkgs, ... }:
 
 let
-  inherit (config.aster) user;
+  cfg = config.Aster.apps.zen;
+
+  # Forces extensions to be provisioned, and build the URL
   mkExtensions = builtins.mapAttrs (_: pluginId: {
     install_url =
       "https://addons.mozilla.org/firefox/downloads/latest/${pluginId}/latest.xpi";
     installation_mode = "force_installed";
   });
 
-  myPolicies = {
+  # Generated the proper user.js content from our nix thingy
+  mkUserJs = prefs:
+    lib.concatStringsSep "\n" (lib.mapAttrsToList
+      (name: value: ''user_pref("${name}", ${builtins.toJSON value});'') prefs);
+
+  # Zen's config, which are to be fed to mkUserJS -> wrapper
+  zenPolicies = {
     AutofillAddressEnabled = false;
     AutofillCreditCardEnabled = false;
     DisableAppUpdate = true;
@@ -35,7 +48,8 @@ let
     };
   };
 
-  myPrefs = {
+  # Zen's preferences, easier to feed to the wrapper
+  zenPreferences = {
     "browser.tabs.warnOnClose" = false;
     "browser.newtabpage.activity-stream.feeds.telemetry" = false;
     "browser.newtabpage.activity-stream.telemetry" = false;
@@ -48,6 +62,8 @@ let
     "privacy.trackingprotection.enabled" = true;
     "privacy.trackingprotection.socialtracking.enabled" = true;
     "privacy.partition.network_state.ocsp_cache" = true;
+
+    # Telemetry Disabling, not all encompassing me thinks
     "toolkit.telemetry.archive.enabled" = false;
     "toolkit.telemetry.bhrPing.enabled" = false;
     "toolkit.telemetry.enabled" = false;
@@ -60,21 +76,27 @@ let
     "toolkit.telemetry.updatePing.enabled" = false;
   };
 
-  mkUserJs = prefs:
-    lib.concatStringsSep "\n" (lib.mapAttrsToList
-      (name: value: ''user_pref("${name}", ${builtins.toJSON value});'') prefs);
-
+  # Target the unwrapped package from the zen-browser flake
   unwrapped =
     inputs.zen-browser.packages.${pkgs.stdenv.hostPlatform.system}.twilight-unwrapped;
 
-  unwrappedWithPolicies = unwrapped.override { policies = myPolicies; };
+  # Feed it the policies
+  unwrappedWithPolicies = unwrapped.override { policies = zenPolicies; };
 
-  zen-wrapped = pkgs.wrapFirefox (unwrappedWithPolicies // {
-    inherit (pkgs) gtk3;
+  # Wrap the browser, given it's unwrapped. Feed it prefs too
+  zenWrapped = pkgs.wrapFirefox (unwrappedWithPolicies // {
+    inherit (pkgs) gtk3; # While testing, this needed to be here
     applicationName = "Zen Browser";
   }) {
     pname = "zen-browser";
     libName = "zen";
-    extraPrefs = mkUserJs myPrefs;
+    extraPrefs = mkUserJs zenPreferences;
   };
-in { users.users.${user}.packages = [ zen-wrapped ]; }
+
+in {
+  options.Aster.apps.zen.enable = lib.mkEnableOption "Zen Browser (Twilight)";
+
+  config = lib.mkIf cfg.enable {
+    users.users.${config.Aster.user}.packages = [ zenWrapped ];
+  };
+}

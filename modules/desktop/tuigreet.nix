@@ -1,12 +1,18 @@
-{ pkgs, ... }:
+{ config, lib, pkgs, ... }:
 
 {
-  services.greetd = {
-    enable = true;
-    useTextGreeter = true;
-    settings.default_session = {
-      command = "${pkgs.tuigreet}/bin/tuigreet --remember --remember-session";
-      user = "greeter";
+  options.Aster.desktop.tuigreet.enable = lib.mkEnableOption "Tuigreet";
+
+  config = lib.mkIf config.Aster.desktop.tuigreet.enable {
+    services.greetd = {
+      enable = true;
+      useTextGreeter = true;
+
+      settings.default_session = {
+        command =
+          "${pkgs.tuigreet}/bin/tuigreet --time --remember --remember-session";
+        user = "greeter";
+      };
     };
   };
 }

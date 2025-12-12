@@ -1,6 +1,6 @@
 { config, inputs, lib, pkgs, ... }:
 
-let inherit (config.aster) user;
+let inherit (config.Aster) user;
 in {
   nixpkgs.config.allowUnfree = true;
 

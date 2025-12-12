@@ -1,17 +1,22 @@
-{ pkgs, ... }:
+{ config, lib, pkgs, ... }:
 
 {
-  programs = {
-    gamemode = {
-      enable = true;
-      enableRenice = true;
+  options.Aster.apps.gaming.enable =
+    lib.mkEnableOption "Gaming programs & tools";
+
+  config = lib.mkIf config.Aster.apps.gaming.enable {
+    programs = {
+      gamemode = {
+        enable = true;
+        enableRenice = true;
+      };
+
+      steam = {
+        enable = true;
+        extraCompatPackages = [ pkgs.proton-ge-bin ];
+      };
     };
 
-    steam = {
-      enable = true;
-      extraCompatPackages = [ pkgs.proton-ge-bin ];
-    };
+    environment.systemPackages = with pkgs; [ prismlauncher protontricks ];
   };
-
-  environment.systemPackages = [ pkgs.prismlauncher pkgs.protontricks ];
 }

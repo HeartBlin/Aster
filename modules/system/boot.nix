@@ -1,18 +1,20 @@
-{ pkgs, ... }:
+{ config, lib, pkgs, ... }:
 
 {
-  boot = {
-    kernelPackages = pkgs.linuxPackages;
+  options.Aster.system.boot.enable = lib.mkEnableOption "Standard boot config";
 
-    tmp.useTmpfs = true;
-    initrd.systemd.enable = true;
-
-    loader = {
-      timeout = 0;
-      efi.canTouchEfiVariables = true;
-      systemd-boot = {
-        enable = true;
-        editor = false;
+  config = lib.mkIf config.Aster.system.boot.enable {
+    boot = {
+      kernelPackages = pkgs.linuxPackages;
+      tmp.useTmpfs = true;
+      initrd.systemd.enable = true;
+      loader = {
+        timeout = lib.mkDefault 0;
+        efi.canTouchEfiVariables = true;
+        systemd-boot = {
+          enable = true;
+          editor = false;
+        };
       };
     };
   };

@@ -1,32 +1,33 @@
-{ config, ... }:
+{ config, lib, ... }:
 
-let
-  inherit (config.aster) user;
-  gitConfig = ''
-    [commit]
-      gpgsign = true
+{
+  options.Aster.apps.git.enable = lib.mkEnableOption "Git /w sign";
 
-    [gpg]
-      format = "ssh"
+  config = lib.mkIf config.Aster.apps.git.enable {
+    programs.git.enable = true;
 
-    [gpg "ssh"]
-      allowedSignersFile = ${config.age.secrets.allowedSigner.path}
+    hjem.users.${config.Aster.user}.files = {
+      ".config/git/config".text = ''
+        [commit]
+          gpgsign = true
 
-    [include]
-      path = /run/agenix/gitPersona
-  '';
+        [gpg]
+          format = "ssh"
 
-  sshConfig = ''
-    Host github.com
-      User git
-      HostName github.com
-      PreferredAuthentications publickey
-      IdentityFile ~/.ssh/githubAuth
-  '';
-in {
-  programs.git.enable = true;
-  hjem.users.${user}.files = {
-    ".config/git/config".text = gitConfig;
-    ".ssh/config".text = sshConfig;
+        [gpg "ssh"]
+          allowedSignersFile = ${config.age.secrets.allowedSigner.path}
+
+        [include]
+          path = /run/agenix/gitPersona
+      '';
+
+      ".ssh/config".text = ''
+        Host github.com
+          User git
+          HostName github.com
+          PreferredAuthentications publickey
+          IdentityFile ~/.ssh/githubAuth
+      '';
+    };
   };
 }

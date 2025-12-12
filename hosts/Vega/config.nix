@@ -1,101 +1,62 @@
-{ config, inputs, modulesPath, lib, pkgs, self, ... }:
+{ lib, pkgs, self, ... }:
 
-let inherit (lib) mkForce;
-in {
-  imports = [
-    # From flake inputs (req)
-    inputs.agenix.nixosModules.default
-    inputs.disko.nixosModules.default
-    inputs.hjem.nixosModules.default
+{
+  imports = [ self.nixosModules.default ];
+  Aster = {
+    isIso = false;
+    user = "heartblin";
+    apps = {
+      analysis.enable = true;
+      android-tools.enable = false;
+      chrome.enable = false;
+      davinci.enable = true;
+      discord.enable = false;
+      foot.enable = true;
+      gaming.enable = true;
+      git.enable = true;
+      shell.enable = true;
+      vicinae.enable = true;
+      vmware.enable = true;
+      vscode.enable = true;
+      zen.enable = true;
+    };
 
-    # From flake inputs (opt)
-    inputs.hyprland.nixosModules.default
-    inputs.lanzaboote.nixosModules.lanzaboote
-    inputs.nix-index-database.nixosModules.nix-index
+    desktop = {
+      gdm.enable = true;
+      gnome-utils.enable = true;
+      hyprland.enable = true;
+      sddm.enable = false;
+      theme.enable = true;
+      tuigreet.enable = false;
+    };
 
-    # Unknown hardware
-    (modulesPath + "/installer/scan/not-detected.nix")
+    hardware = {
+      asus.enable = true;
+      bluetooth.enable = true;
+      compatibility.enable = true;
+      nvidia.enable = true;
+    };
 
-    # From 'system'
-    "${self}/modules/system/audio.nix"
-    "${self}/modules/system/boot.nix"
-    "${self}/modules/system/locale.nix"
-    "${self}/modules/system/network.nix"
-    "${self}/modules/system/nix.nix"
-    "${self}/modules/system/quietBoot.nix"
-    "${self}/modules/system/secureBoot.nix"
-    "${self}/modules/system/user.nix"
-
-    # From 'apps'
-    "${self}/modules/apps/analysis.nix"
-    # "${self}/modules/apps/android.nix"
-    # "${self}/modules/apps/chrome.nix"
-    "${self}/modules/apps/davinci.nix"
-    "${self}/modules/apps/discord.nix"
-    "${self}/modules/apps/foot.nix"
-    "${self}/modules/apps/gaming.nix"
-    "${self}/modules/apps/git.nix"
-    "${self}/modules/apps/shell.nix"
-    "${self}/modules/apps/vicinae.nix"
-    "${self}/modules/apps/vmware.nix"
-    "${self}/modules/apps/vscode.nix"
-    "${self}/modules/apps/zen.nix"
-
-    # From 'desktop'
-    # "${self}/modules/desktop/gdm.nix"
-    "${self}/modules/desktop/gnome-utils.nix"
-    "${self}/modules/desktop/hyprland.nix"
-    # "${self}/modules/desktop/ly.nix"
-    # "${self}/modules/desktop/sddm.nix"
-    "${self}/modules/desktop/theme.nix"
-    "${self}/modules/desktop/tuigreet.nix"
-
-    # From 'hardware'
-    "${self}/modules/hardware/asus.nix"
-    "${self}/modules/hardware/bluetooth.nix"
-    "${self}/modules/hardware/nvidia.nix"
-  ];
-
-  # Global Aster config
-  aster.user = "heartblin";
-
-  # Module overrides
-  boot = {
-    plymouth.enable = mkForce false;
-    kernelPackages = mkForce pkgs.linuxPackages_zen;
-    kernelParams = [ "amd_pstate=active" ];
-  };
-
-  # Specifics
-  hardware.cpu.amd.updateMicrocode = true;
-  services.fstrim.enable = true;
-
-  # Secrets
-  age = {
-    identityPaths = [ "/etc/ssh/LOVE" ]; # Without LOVE it cannot be seen
-    secrets = {
-      heart.file = "${self}/secrets/heart.age";
-      allowedSigner = {
-        file = "${self}/secrets/allowedSigner.age";
-        owner = "heartblin";
-        mode = "600";
-      };
-
-      gitPersona = {
-        file = "${self}/secrets/gitPersona.age";
-        owner = "heartblin";
-        mode = "600";
-      };
+    system = {
+      agenix.enable = true;
+      audio.enable = true;
+      boot.enable = true;
+      # locale is unguarded
+      # network is unguarded
+      # nix.nix is unguarded
+      quietBoot.enable = true;
+      secureBoot.enable = true;
+      # user.nix is unguarded
     };
   };
 
-  # Feed secrets
-  users.users."${config.aster.user}".hashedPasswordFile =
-    config.age.secrets.heart.path;
+  # Module overrides
+  boot = {
+    kernelPackages = lib.mkForce pkgs.linuxPackages_zen;
+    kernelParams = [ "amd_pstate=active" ]; # The funny
+  };
 
   # Identity
-  environment.systemPackages =
-    [ inputs.agenix.packages.${pkgs.stdenv.hostPlatform.system}.default ];
   networking.hostName = "Vega";
   nixpkgs.hostPlatform = "x86_64-linux";
   system.stateVersion = "26.05";
