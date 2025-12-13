@@ -53,7 +53,7 @@
 
   # Module overrides
   boot = {
-    kernelPackages = lib.mkForce pkgs.linuxPackages_zen;
+    kernelPackages = lib.mkForce pkgs.linuxPackages_xanmod_latest;
     kernelParams = [ "amd_pstate=active" ]; # The funny
   };
 

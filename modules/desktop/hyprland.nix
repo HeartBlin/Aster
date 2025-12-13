@@ -29,29 +29,26 @@ let
 
   # Big boy
   hyprGameMode = pkgs.writeShellScriptBin "hyprGameMode" ''
-    GAMEMODE_OFF() {
-      hyprctl notify 1 5000 "rgb(d20f39)" "Gamemode [OFF]"
-      awww pause
-      hyprctl reload
-    }
+    HYPRGAMEMODE=$(hyprctl getoption animations:enabled | awk 'NR==1{print $2}')
 
-    GAMEMODE_ON() {
+    if [ "$HYPRGAMEMODE" = 1 ] ; then
       hyprctl --batch "\
         keyword animations:enabled 0;\
-        keyword animation borderangle 0;\
-        keyword decoration:shadow:enabled 0;\
+        keyword decoration:drop_shadow 0;\
         keyword decoration:blur:enabled 0;\
-        keyword decoration:fullscreen_opacity 1;\
         keyword general:gaps_in 0;\
         keyword general:gaps_out 0;\
         keyword general:border_size 1;\
         keyword decoration:rounding 0"
+
       awww pause
       hyprctl notify 1 5000 "rgb(40a02b)" "Gamemode [ON]"
-    }
+      exit
+    fi
 
-    # Check if animations are enabled to toggle state
-    [ "$(hyprctl getoption animations:enabled | awk 'NR==1{print $2}')" = 1 ] && GAMEMODE_OFF || GAMEMODE_ON
+    hyprctl reload
+    awww pause
+    hyprctl notify 1 5000 "rgb(d20f39)" "Gamemode [OFF]"
   '';
 
   # Avoid typing the same 20 things over and over
