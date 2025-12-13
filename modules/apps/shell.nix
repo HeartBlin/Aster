@@ -16,6 +16,10 @@
         shellAliases = {
           ls = "${pkgs.eza}/bin/eza -l";
           cat = "${pkgs.bat}/bin/bat";
+
+          # The mistakes
+          clea = "clear";
+
         };
       };
 
