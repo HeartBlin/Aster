@@ -32,7 +32,8 @@
 
   outputs = { nixpkgs, self, ... }@inputs:
     let
-      inherit (nixpkgs.lib) filesystem genAttrs hasSuffix nixosSystem;
+      inherit (nixpkgs.lib)
+        filesystem genAttrs hasSuffix nixosSystem removeSuffix;
       inherit (builtins) attrNames filter pathExists readDir;
 
       # The package I expose could work on aarch.
@@ -48,8 +49,8 @@
         (attrNames (readDir ./hosts));
 
       # Auto-discover packages
-      packageList = filter (name: pathExists ./packages/${name}/default.nix)
-        (attrNames (readDir ./packages));
+      packageList =
+        filter (name: hasSuffix ".nix" name) (attrNames (readDir ./packages));
     in {
       nixosModules.default.imports = moduleList;
       nixosConfigurations = genAttrs hostList (hostName:
@@ -66,7 +67,7 @@
 
       packages = genAttrs systems (system:
         let pkgs = nixpkgs.legacyPackages.${system};
-        in genAttrs packageList
-        (name: pkgs.callPackage ./packages/${name} { }));
+        in genAttrs (map (name: removeSuffix ".nix" name) packageList)
+        (name: pkgs.callPackage ./packages/${name}.nix { }));
     };
 }
