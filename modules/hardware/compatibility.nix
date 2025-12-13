@@ -1,6 +1,6 @@
 # Welcome to the Jank™ drawer©
 
-{ config, inputs, lib, ... }:
+{ config, inputs, lib, pkgs, ... }:
 
 {
   options.Aster.hardware.compatibility.enable =
@@ -15,6 +15,13 @@
     hardware = {
       enableRedistributableFirmware = lib.mkDefault true;
       cpu.amd.updateMicrocode = true; # No INTEL in this house boys
+    };
+
+    # Rage mode activated
+    environment.systemPackages = [ pkgs.distrobox ];
+    virtualisation.podman = {
+      enable = true;
+      dockerCompat = true;
     };
   };
 }

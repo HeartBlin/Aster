@@ -15,6 +15,7 @@
       gaming.enable = true;
       git.enable = true;
       shell.enable = true;
+      unity.enable = true;
       vicinae.enable = true;
       vmware.enable = true;
       vscode.enable = true;
