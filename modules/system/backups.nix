@@ -1,9 +1,4 @@
-# RECOVERY
-#
-# sudo RCLONE_CONFIG=/run/agenix/rclone restic -r rclone:gdrive:/<NAME> \
-#   --password-file /run/agenix/restic mount /mnt/restore
-
-{ config, lib, ... }:
+{ config, lib, pkgs, ... }:
 
 let inherit (config.Aster) user;
 in {
@@ -15,6 +10,8 @@ in {
       passwordFile = config.age.secrets.restic.path;
       rcloneConfigFile = config.age.secrets.rclone.path;
       initialize = true;
+      runCheck = true;
+      checkOpts = [ "--read-data-subset=10%" ];
 
       paths = [
         "/home/${user}/Documents"
@@ -47,6 +44,22 @@ in {
       after = [ "network-online.target" ];
       requires = [ "network-online.target" ];
       unitConfig.ConditionACPower = true;
+      serviceConfig = {
+        CPUSchedulingPolicy = "batch";
+        Nice = 19;
+        IOSchedulingClass = "best-effort";
+        IOSchedulingPriority = 7;
+      };
     };
+
+    environment.systemPackages = [
+      pkgs.restic
+      pkgs.rclone
+      (pkgs.writeShellScriptBin "restic-gdrive" ''
+        export RCLONE_CONFIG=${config.age.secrets.rclone.path}
+        export RESTIC_PASSWORD_FILE=${config.age.secrets.restic.path}
+        exec ${pkgs.restic}/bin/restic -r rclone:gdrive:/Aster "$@"
+      '')
+    ];
   };
 }
