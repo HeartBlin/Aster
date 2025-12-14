@@ -46,6 +46,7 @@
     system = {
       agenix.enable = false;
       audio.enable = true;
+      backups.enable = false;
       boot.enable = false; # I know it look funny, but isIso takes care of this
       # locale is unguarded
       # network is unguarded

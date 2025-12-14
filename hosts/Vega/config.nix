@@ -41,6 +41,7 @@
     system = {
       agenix.enable = true;
       audio.enable = true;
+      backups.enable = true;
       boot.enable = true;
       # locale is unguarded
       # network is unguarded

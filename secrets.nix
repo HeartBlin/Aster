@@ -5,4 +5,6 @@ in {
   "heart.age".publicKeys = [ Vega ]; # Guess
   "gitPersona.age".publicKeys = [ Vega ]; # [user] in git.nix
   "allowedSigner.age".publicKeys = [ Vega ]; # it does have my email technically
+  "restic.age".publicKeys = [ Vega ]; # Restic backups
+  "rclone.age".publicKeys = [ Vega ]; # Rclone backups
 }

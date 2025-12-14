@@ -13,6 +13,8 @@
     age.identityPaths = [ "/etc/ssh/LOVE" ];
     age.secrets = {
       heart.file = "${self}/secrets/heart.age";
+      restic.file = "${self}/secrets/restic.age";
+      rclone.file = "${self}/secrets/rclone.age";
       allowedSigner = {
         file = "${self}/secrets/allowedSigner.age";
         owner = config.Aster.user;
