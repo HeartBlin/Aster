@@ -19,6 +19,7 @@
       foot.enable = true;
       gaming.enable = false;
       git.enable = false;
+      protonmail.enable = false;
       shell.enable = true;
       unity.enable = false;
       vicinae.enable = true;
