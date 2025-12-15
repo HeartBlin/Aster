@@ -46,8 +46,8 @@ in {
         file:///home/${config.Aster.user}/Music Music
         file:///home/${config.Aster.user}/Videos Videos
 
-        file:///home/${config.Aster.user}/.steam/steam/steamapps/common/PayDay%202/mods /mods
-        file:///home/${config.Aster.user}/.steam/steam/steamapps/common/PayDay%202/assets/mod_overrides /mod_overrides
+        file:///home/${config.Aster.user}/.steam/steam/steamapps/common/PAYDAY%202/mods /mods
+        file:///home/${config.Aster.user}/.steam/steam/steamapps/common/PAYDAY%202/assets/mod_overrides /mod_overrides
       '';
     };
   };
